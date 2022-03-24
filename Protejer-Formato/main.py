@@ -7,6 +7,7 @@ from tkinter.messagebox import *
 import os
 import shutil
 from pdf2image import convert_from_path
+from PIL import Image #para guardar imagen a pdf
 rutaActual = os.getcwd
 Tk().withdraw() # elimina la ventana raiz de tkinter
 
@@ -16,7 +17,6 @@ for rutaNombreArchivo in nombreArchivos:
     s = rutaNombreArchivo.split("/")
     nombreArchivo=s[len(s)-1].replace(".docx","").strip() #obtenemos el nombre del archivo y quitamos los espacios
     ruta = "/".join(s[0:-1])
-    print(nombreArchivo)
     rutaArchivo= ruta+"/"+nombreArchivo
     #comprovamos si existe la carpeta
     if os.path.isdir(rutaArchivo) != False:
@@ -27,9 +27,20 @@ for rutaNombreArchivo in nombreArchivos:
     convert(rutaArchivo+".docx",rutaArchivo+".pdf")
     #convertimos el pdf a word
     images = convert_from_path(rutaArchivo+".pdf", 500,poppler_path=r"C:\Program Files\poppler-22.01.0\Library\bin")
+    rutaImagenes = []
     for i in range(len(images)):
         # guardamos las paginas del pdf como imagenes
+        rutaImagenes.append(rutaArchivo+'/pagina'+ str(i+1)+'.jpg')
         images[i].save(rutaArchivo+'/pagina'+ str(i+1) +'.jpg', 'JPEG')
     os.remove(rutaArchivo+".pdf")
-
+    imagensN = []#almacenamos la imgen abierta mediante la ruta
+    imsN = [] #guardamos la imagen convertida
+    cont = 0
+    for rutaImagen in rutaImagenes:
+        imagensN.append(Image.open(rutaImagen))
+        imsN.append(imagensN[cont].convert('RGB'))
+        cont+=1
+    
+    imsN[0].save(rutaArchivo+'.pdf', save_all=True, append_images=imsN[0:-1])
+    shutil.rmtree(rutaArchivo)
     #showinfo(title="Mensaje", message="Se han creado: "+str(len(images))+" Imagenes")
